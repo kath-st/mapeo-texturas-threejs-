@@ -41,10 +41,10 @@ class UIManager {
         this.dashboard.classList.toggle('dashboard--collapsed')
         // Cambiar el texto o ícono del botón
         if (this.dashboard.classList.contains('dashboard--collapsed')) {
-          this.toggleBtn.innerHTML = '⚡ Mostrar Guía'
+          this.toggleBtn.innerHTML = 'Mostrar Guía'
           this.toggleBtn.classList.add('toggle-btn--floating')
         } else {
-          this.toggleBtn.innerHTML = '✕ Ocultar Guía'
+          this.toggleBtn.innerHTML = 'Ocultar Guía'
           this.toggleBtn.classList.remove('toggle-btn--floating')
         }
       })

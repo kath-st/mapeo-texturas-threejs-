@@ -169,12 +169,13 @@ class UIManager {
     if (!window.sceneInstance) return
 
     const scene = window.sceneInstance
+    const preserveCustom = scene.state.textureName === 'custom'
 
     switch (preset) {
       case 'distorsion-uv':
         // Demuestra cómo el mapeo UV se adapta a diferentes geometrías
         scene.updateStateProperty('textureActive', true)
-        scene.updateStateProperty('textureName', 'uv_grid')
+        if (!preserveCustom) scene.updateStateProperty('textureName', 'uv_grid')
         scene.updateStateProperty('wrapMode', 'RepeatWrapping')
         scene.updateStateProperty('repeatX', 1)
         scene.updateStateProperty('repeatY', 1)
@@ -184,7 +185,7 @@ class UIManager {
       case 'wrapping-clamp':
         // Demuestra el efecto de ClampToEdge al estirar la textura en bordes
         scene.updateStateProperty('textureActive', true)
-        scene.updateStateProperty('textureName', 'brick')
+        if (!preserveCustom) scene.updateStateProperty('textureName', 'brick')
         scene.updateStateProperty('wrapMode', 'ClampToEdgeWrapping')
         scene.updateStateProperty('repeatX', 3)
         scene.updateStateProperty('repeatY', 3)
@@ -194,7 +195,7 @@ class UIManager {
       case 'wrapping-repeat':
         // Demuestra el patrón repetido de ladrillos
         scene.updateStateProperty('textureActive', true)
-        scene.updateStateProperty('textureName', 'brick')
+        if (!preserveCustom) scene.updateStateProperty('textureName', 'brick')
         scene.updateStateProperty('wrapMode', 'RepeatWrapping')
         scene.updateStateProperty('repeatX', 4)
         scene.updateStateProperty('repeatY', 4)
@@ -204,7 +205,7 @@ class UIManager {
       case 'filter-nearest':
         // Demuestra pixelado al acercar o aliasing al alejar sin mipmaps
         scene.updateStateProperty('textureActive', true)
-        scene.updateStateProperty('textureName', 'uv_grid')
+        if (!preserveCustom) scene.updateStateProperty('textureName', 'uv_grid')
         scene.updateStateProperty('minFilter', 'NearestFilter')
         scene.updateStateProperty('magFilter', 'NearestFilter')
         scene.updateStateProperty('generateMipmaps', false)
@@ -214,7 +215,7 @@ class UIManager {
       case 'filter-linear':
         // Demuestra suavizado bilineal
         scene.updateStateProperty('textureActive', true)
-        scene.updateStateProperty('textureName', 'uv_grid')
+        if (!preserveCustom) scene.updateStateProperty('textureName', 'uv_grid')
         scene.updateStateProperty('minFilter', 'LinearFilter')
         scene.updateStateProperty('magFilter', 'LinearFilter')
         scene.updateStateProperty('generateMipmaps', false)
@@ -225,7 +226,7 @@ class UIManager {
         // Muestra textura clara a lo lejos en plano inclinado
         scene.updateStateProperty('geometry', 'plane')
         scene.updateStateProperty('textureActive', true)
-        scene.updateStateProperty('textureName', 'stone')
+        if (!preserveCustom) scene.updateStateProperty('textureName', 'stone')
         scene.updateStateProperty('wrapMode', 'RepeatWrapping')
         scene.updateStateProperty('repeatX', 8)
         scene.updateStateProperty('repeatY', 8)
@@ -239,7 +240,7 @@ class UIManager {
         // Muestra textura borrosa a lo lejos en plano inclinado
         scene.updateStateProperty('geometry', 'plane')
         scene.updateStateProperty('textureActive', true)
-        scene.updateStateProperty('textureName', 'stone')
+        if (!preserveCustom) scene.updateStateProperty('textureName', 'stone')
         scene.updateStateProperty('wrapMode', 'RepeatWrapping')
         scene.updateStateProperty('repeatX', 8)
         scene.updateStateProperty('repeatY', 8)

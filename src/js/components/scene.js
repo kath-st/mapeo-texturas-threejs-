@@ -4,14 +4,15 @@ import {
   Scene,
   PerspectiveCamera,
   Mesh,
-  SphereGeometry,
-  MeshMatcapMaterial,
-  AxesHelper,
+  BoxGeometry,
+  MeshStandardMaterial,
+  TextureLoader,
+  AmbientLight,
+  DirectionalLight,
+  GridHelper,
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'stats-js'
-import LoaderManager from '@/js/managers/LoaderManager'
-import GUI from 'lil-gui'
 
 export default class MainScene {
   #canvas
@@ -23,48 +24,30 @@ export default class MainScene {
   #width
   #height
   #mesh
-  #guiObj = {
-    y: 0,
-    showTitle: true,
-  }
 
   constructor() {
     this.#canvas = document.querySelector('.scene')
-
     this.init()
   }
 
   init = async () => {
-    // Preload assets before initiating the scene
-    const assets = [
-      {
-        name: 'matcap',
-        texture: './img/matcap.png',
-      },
-    ]
-
-    await LoaderManager.load(assets)
-
     this.setStats()
-    this.setGUI()
     this.setScene()
     this.setRender()
     this.setCamera()
+    this.setLights()
     this.setControls()
-    this.setAxesHelper()
+    this.setGridHelper()
 
-    this.setSphere()
-
-    this.handleResize()
-
-    // start RAF
-    this.events()
+    // Cargar la textura desde public/textures/uv_grid.png para la Fase 1
+    const loader = new TextureLoader()
+    loader.load('./textures/uv_grid.png', (texture) => {
+      this.setCube(texture)
+      this.handleResize()
+      this.events()
+    })
   }
 
-  /**
-   * Our Webgl renderer, an object that will draw everything in our canvas
-   * https://threejs.org/docs/?q=rend#api/en/renderers/WebGLRenderer
-   */
   setRender() {
     this.#renderer = new WebGLRenderer({
       canvas: this.#canvas,
@@ -72,132 +55,86 @@ export default class MainScene {
     })
   }
 
-  /**
-   * This is our scene, we'll add any object
-   * https://threejs.org/docs/?q=scene#api/en/scenes/Scene
-   */
   setScene() {
     this.#scene = new Scene()
-    this.#scene.background = new Color(0xffffff)
+    this.#scene.background = new Color(0x121214) // Slate oscuro premium
   }
 
-  /**
-   * Our Perspective camera, this is the point of view that we'll have
-   * of our scene.
-   * A perscpective camera is mimicing the human eyes so something far we'll
-   * look smaller than something close
-   * https://threejs.org/docs/?q=pers#api/en/cameras/PerspectiveCamera
-   */
   setCamera() {
     const aspectRatio = this.#width / this.#height
-    const fieldOfView = 60
+    const fieldOfView = 50
     const nearPlane = 0.1
-    const farPlane = 10000
+    const farPlane = 1000
 
     this.#camera = new PerspectiveCamera(fieldOfView, aspectRatio, nearPlane, farPlane)
-    this.#camera.position.y = 5
-    this.#camera.position.x = 5
-    this.#camera.position.z = 5
+    this.#camera.position.set(3, 3, 4)
     this.#camera.lookAt(0, 0, 0)
 
     this.#scene.add(this.#camera)
   }
 
-  /**
-   * Threejs controls to have controls on our scene
-   * https://threejs.org/docs/?q=orbi#examples/en/controls/OrbitControls
-   */
+  setLights() {
+    const ambientLight = new AmbientLight(0xffffff, 0.4)
+    this.#scene.add(ambientLight)
+
+    const directionalLight = new DirectionalLight(0xffffff, 0.8)
+    directionalLight.position.set(5, 8, 5)
+    this.#scene.add(directionalLight)
+  }
+
   setControls() {
     this.#controls = new OrbitControls(this.#camera, this.#renderer.domElement)
     this.#controls.enableDamping = true
-    // this.#controls.dampingFactor = 0.04
+    this.#controls.dampingFactor = 0.05
   }
 
-  /**
-   * Axes Helper
-   * https://threejs.org/docs/?q=Axesh#api/en/helpers/AxesHelper
-   */
-  setAxesHelper() {
-    const axesHelper = new AxesHelper(3)
-    this.#scene.add(axesHelper)
+  setGridHelper() {
+    const gridHelper = new GridHelper(10, 10, 0x4f46e5, 0x27272a)
+    gridHelper.position.y = -1.2
+    this.#scene.add(gridHelper)
   }
 
-  /**
-   * Create a SphereGeometry
-   * https://threejs.org/docs/?q=box#api/en/geometries/SphereGeometry
-   * with a Basic material
-   * https://threejs.org/docs/?q=mesh#api/en/materials/MeshBasicMaterial
-   */
-  setSphere() {
-    const geometry = new SphereGeometry(1, 32, 32)
-    const material = new MeshMatcapMaterial({ matcap: LoaderManager.assets['matcap'].texture })
+  setCube(texture) {
+    const geometry = new BoxGeometry(1.8, 1.8, 1.8)
+    const material = new MeshStandardMaterial({
+      map: texture,
+      roughness: 0.4,
+      metalness: 0.1
+    })
 
     this.#mesh = new Mesh(geometry, material)
     this.#scene.add(this.#mesh)
   }
 
-  /**
-   * Build stats to display fps
-   */
   setStats() {
     this.#stats = new Stats()
     this.#stats.showPanel(0)
     document.body.appendChild(this.#stats.dom)
   }
 
-  setGUI() {
-    const titleEl = document.querySelector('.main-title')
-
-    const handleChange = () => {
-      this.#mesh.position.y = this.#guiObj.y
-      titleEl.style.display = this.#guiObj.showTitle ? 'block' : 'none'
-    }
-
-    const gui = new GUI()
-    gui.add(this.#guiObj, 'y', -3, 3).onChange(handleChange)
-    gui.add(this.#guiObj, 'showTitle').name('show title').onChange(handleChange)
-  }
-  /**
-   * List of events
-   */
   events() {
     window.addEventListener('resize', this.handleResize, { passive: true })
-    this.draw(0)
+    this.draw()
   }
 
-  // EVENTS
-
-  /**
-   * Request animation frame function
-   * This function is called 60/time per seconds with no performance issue
-   * Everything that happens in the scene is drawed here
-   * @param {Number} now
-   */
   draw = () => {
-    // now: time in ms
     this.#stats.begin()
 
-    if (this.#controls) this.#controls.update() // for damping
+    if (this.#controls) this.#controls.update()
     this.#renderer.render(this.#scene, this.#camera)
 
     this.#stats.end()
     this.raf = window.requestAnimationFrame(this.draw)
   }
 
-  /**
-   * On resize, we need to adapt our camera based
-   * on the new window width and height and the renderer
-   */
   handleResize = () => {
     this.#width = window.innerWidth
     this.#height = window.innerHeight
 
-    // Update camera
     this.#camera.aspect = this.#width / this.#height
     this.#camera.updateProjectionMatrix()
 
-    const DPR = window.devicePixelRatio ? window.devicePixelRatio : 1
-
+    const DPR = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1
     this.#renderer.setPixelRatio(DPR)
     this.#renderer.setSize(this.#width, this.#height)
   }

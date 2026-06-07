@@ -1,88 +1,88 @@
 # Laboratorio Interactivo de Mapeo de Texturas 3D
 
-Este es un proyecto educativo e interactivo desarrollado en **Three.js** y **Vite** para la asignatura de **Computación Gráfica (Computación Visual)**. Permite explorar de forma práctica y visual los conceptos fundamentales del mapeo de texturas en objetos 3D.
-
-![Captura del Laboratorio](./src/public/textures/uv_grid.png) *(Nota: Puedes usar el botón de captura de pantalla integrado para guardar tus configuraciones)*
+Este es un proyecto educativo e interactivo desarrollado como material de aprendizaje visual para la asignatura de **Computación Gráfica (Computación Visual)**. Permite explorar y comparar en tiempo real las diferencias críticas de renderizado al mapear imágenes sobre superficies 3D.
 
 ---
 
-## 🚀 Guía de Instalación y Ejecución
+## 🛠️ Tecnologías Usadas
+* **HTML5**: Estructura semántica del laboratorio y controles informativos.
+* **JavaScript (ES6+)**: Lógica interactiva de control de texturas y sincronización de estado.
+* **Three.js**: Biblioteca WebGL para la renderización de la escena 3D, cámaras, iluminación y materiales.
+* **Vite**: Bundler rápido para desarrollo local y compilación optimizada.
+* **Sass (SCSS)**: Diseño visual personalizado y responsivo con tema oscuro (glassmorphism).
 
-Sigue estos pasos para ejecutar la aplicación en tu entorno local:
+---
 
-### 1. Requisitos Previos
-Asegúrate de tener instalado [Node.js](https://nodejs.org/) (versión 16 o superior recomendada).
+## 🚀 Cómo Instalar y Ejecutar
 
-### 2. Instalar Dependencias
-Abre tu terminal en la carpeta raíz del proyecto (`mapeo-texturas-threejs`) y ejecuta:
+Sigue estos pasos en tu terminal para ejecutar la aplicación:
+
+### 1. Instalar Dependencias
+Navega a la carpeta del proyecto y ejecuta el instalador de paquetes:
 ```bash
 npm install
 ```
 
-### 3. Iniciar Servidor de Desarrollo
-Ejecuta el servidor local de Vite:
+### 2. Iniciar Servidor de Desarrollo
+Inicia el servidor local de desarrollo con recarga en caliente (hot reload):
 ```bash
 npm run dev
 ```
-La terminal te mostrará una dirección local (usualmente `http://localhost:5173`). Abre este enlace en tu navegador.
-
-### 4. Compilar para Producción
-Si deseas empaquetar la aplicación optimizada para producción:
-```bash
-npm run build
-```
-Los archivos de distribución se generarán en la carpeta `dist`.
+La terminal imprimirá un enlace local (ej. `http://localhost:5173`). Haz Ctrl+Clic para abrirlo en tu navegador.
 
 ---
 
-## 📖 Conceptos Gráficos Demostrados
+## 📖 Conceptos de Computación Gráfica Demostrados
 
-La aplicación cuenta con una guía educativa en el lateral izquierdo que permite entender y experimentar con los siguientes temas:
+### 1. ¿Qué es el Mapeo de Texturas?
+El **mapeo de texturas** es una técnica que consiste en envolver la superficie de un objeto tridimensional con una imagen bidimensional (textura) para añadirle detalle visual, color y realismo (como ladrillo, madera o piedra) sin incrementar la complejidad geométrica (número de polígonos) del modelo.
 
-### 1. Coordenadas UV (UV Mapping)
-* **¿Qué es?**: Las coordenadas UV representan la superficie 2D normalizada de un objeto en coordenadas $u$ (horizontal) y $v$ (vertical), ambas en el rango $[0.0, 1.0]$.
-* **En la App**: Al seleccionar la textura **UV Grid**, verás líneas de coordenadas numéricas sobre las geometrías (Cubo, Esfera y Plano).
-* **Qué observar**: Nota cómo la esfera presenta estiramientos de textura cerca de los polos (singularidad del mapeo esférico), mientras que el plano tiene un mapeo lineal sin distorsión.
+### 2. ¿Qué son las Coordenadas UV?
+Las **coordenadas UV** son un par de valores numéricos $(u, v)$ asignados a cada vértice de un objeto 3D. Estos valores están normalizados en el rango $[0.0, 1.0]$. La coordenada $u$ representa la posición horizontal en la textura 2D, y la coordenada $v$ representa la posición vertical. Permiten que la GPU conozca con precisión qué píxel (téctel) de la textura corresponde a cada punto sobre la superficie del modelo 3D.
 
-### 2. Modos de Envoltura (Wrapping)
-* **¿Qué es?**: Define el comportamiento del renderizador cuando las coordenadas UV asignadas a los vértices caen fuera del rango $[0.0, 1.0]$ (debido a factores de repetición/escala mayores a 1).
-* **Modos Soportados**:
-  * `RepeatWrapping`: La textura se repite infinitamente formando un mosaico regular.
-  * `ClampToEdgeWrapping`: La textura se dibuja una sola vez y los píxeles de los bordes se extienden ("abrazan") infinitamente hacia el exterior.
-* **Qué observar**: Configura `Repetición U` y `Repetición V` a `4.0` en la sección "Envoltura y Repetición" y cambia el modo de wrapping para ver cómo el patrón de ladrillos se repite en mosaico o se estira en las orillas.
+### 3. ¿Qué demuestra RepeatWrapping vs ClampToEdgeWrapping?
+Define el comportamiento del direccionador de texturas de la GPU cuando las coordenadas UV superan el intervalo $[0.0, 1.0]$ (por ejemplo, cuando la escala/repetición de la textura es de 3x3):
+* **RepeatWrapping**: Repite la textura en mosaico de forma continua, ideal para patrones repetitivos como paredes de ladrillo o pisos.
+* **ClampToEdgeWrapping**: "Abraza" o clampa la textura al borde, estirando los píxeles de las orillas (los bordes de U y V) hasta el infinito, resultando en líneas estiradas.
 
-### 3. Filtros de Textura (Minificación y Magnificación)
-* **¿Qué es?**: La textura casi nunca coincide uno a uno con los píxeles de la pantalla.
-  * **Magnificación**: El objeto está muy cerca y la textura debe estirarse.
-  * **Minificación**: El objeto está muy lejos y la textura debe encogerse.
-* **Filtros**:
-  * `NearestFilter`: Toma el color del téctel más cercano (píxel de textura). Genera un aspecto nítido pero pixelado (estilo retro / pixel art).
-  * `LinearFilter`: Promedia los 4 técteles más cercanos. Genera un aspecto difuminado y suave.
-* **Qué observar**: Acércate mucho a la esfera y cambia entre ambos para ver cómo los bordes del grid se pixelan o se suavizan.
+### 4. ¿Qué demuestra NearestFilter vs LinearFilter?
+Se aplican cuando ocurre **magnificación** (el objeto está muy cerca y un píxel de pantalla es más pequeño que un téctel de la textura):
+* **NearestFilter**: Elige el téctel más cercano al centro del píxel. Mantiene la textura nítida pero produce un aspecto cuadriculado o pixelado (retro).
+* **LinearFilter**: Realiza una interpolación bilineal tomando el promedio de los 4 técteles más cercanos. Suaviza la textura difuminando los bordes de los píxeles.
 
-### 4. Mipmapping y Aliasing Óptico
-* **¿Qué es?**: Al alejar un objeto texturizado, muchos píxeles de textura compiten por el mismo píxel de pantalla, produciendo ruido parpadeante (aliasing/shimmering). Mipmapping precalcula versiones reducidas a la mitad ($1/2, 1/4...$) de la textura y usa la versión óptima según la distancia.
-* **Qué observar**: Rota la cámara o aléjate del objeto con el scroll del mouse. Desactiva la casilla **"Generar Mipmaps"** para observar el fuerte ruido visual y parpadeo al mover la cámara. Actívalo nuevamente con `LinearMipmapLinearFilter` para experimentar una interpolación trilineal sumamente estable y suave.
+### 5. ¿Qué demuestra Mipmapping?
+El **Mipmapping** genera versiones precalculadas de la textura a resoluciones menores (ej. 512x512, 256x256...). Cuando el objeto se aleja, WebGL utiliza la versión más pequeña y adecuada. Esto evita el **aliasing óptico** (un ruido molesto de alta frecuencia que causa un parpadeo o parpadeo del píxel al mover la cámara, conocido como *shimmering*). Si se desactiva, las texturas lejanas se ven inestables y ruidosas.
 
-### 5. Filtrado Anisotrópico (Anisotropic Filtering)
-* **¿Qué es?**: Los mipmaps estándar asumen que la textura se escala uniformemente. Sin embargo, al ver un plano inclinado desde un ángulo muy rasante (oblicuo), la proyección es trapezoidal. La anisotropía toma muestras en la dirección de la inclinación del ángulo visual para mantener la nitidez a lo lejos.
-* **Qué observar**: Selecciona la geometría **Plano**, inclina la cámara hasta ver el plano casi horizontalmente hacia el fondo. Cambia entre **Anisotropía = 1x (Desactivada)** y **Anisotropía Máxima (ej. 16x)**. Verás cómo la textura de piedra lejana recupera nitidez al fondo con el filtro activado.
+### 6. ¿Qué demuestra el Filtrado Anisotrópico (Anisotropy)?
+Los mipmaps estándar asumen que la textura se escala uniformemente en todas las direcciones. Al ver una superficie plana (como el suelo) desde un ángulo rasante u oblicuo, el área proyectada de la textura es alargada y trapezoidal. El **Filtrado Anisotrópico** toma muestras direccionales adicionales según el ángulo de inclinación, manteniendo la nitidez de la textura en la lejanía inclinada sin emborronarla.
 
 ---
 
-## 🛠️ Estructura del Código
+## 📷 Capturas Recomendadas para el Informe Técnico
 
-La solución está desacoplada para facilitar su estudio y mantenibilidad académica:
-* 📁 `src/public/textures/`: Contiene los archivos PNG de texturas generadas (Grid, Ladrillo, Madera, Piedra).
-* 📁 `src/js/textures.js`: Módulo que maneja la carga asíncrona de texturas y encapsula las llamadas a la API de Three.js para modificar filtros, wrapping, anisotropía y mipmaps.
-* 📁 `src/js/components/scene.js`: Inicializa la escena 3D, agrega iluminación estándar (`AmbientLight`, `DirectionalLight`, `PointLight`), crea las mallas geométricas, administra el ciclo de renderizado y monta los controles interactivos de `lil-gui`.
-* 📁 `src/js/ui.js`: Controla el panel lateral educativo de HTML5, maneja los clics de pestañas, activa los presets de experimentación rápida y actualiza los valores del inspector en tiempo real mediante eventos.
-* 📁 `src/scss/components/_dashboard.scss`: Aplica un diseño oscuro premium con efectos de desenfoque (glassmorphism) e interactividad responsive.
+Para tu reporte o informe de laboratorio, se recomienda capturar las siguientes configuraciones utilizando el botón **📷 Capturar Vista (PNG)** integrado en la app:
+
+1. **Distorsión UV Esférica**:
+   * Geometría: **Esfera 3D**
+   * Textura: **UV Grid**
+   * *Muestra cómo el mapeo esférico concentra y deforma los cuadrados de la textura en los polos.*
+2. **Comparación de Wrapping**:
+   * Geometría: **Cubo 3D** ➔ Textura: **Ladrillo** ➔ Repetición: **3x3**
+   * Captura 1: Modo **RepeatWrapping** (mosaico continuo).
+   * Captura 2: Modo **ClampToEdgeWrapping** (ladrillos estirados en las caras laterales).
+3. **Magnificación de Filtros**:
+   * Geometría: **Cubo 3D** ➔ Textura: **UV Grid** ➔ Zoom de cerca
+   * Captura 1: Filtro **NearestFilter** (píxeles gigantes cuadrados perfectos).
+   * Captura 2: Filtro **LinearFilter** (suavizado borroso).
+4. **Aliasing Lejano (Mipmaps Off)**:
+   * Geometría: **Plano 2D** ➔ Textura: **UV Grid** ➔ Mipmaps: **Desactivado** ➔ Aléjate con el scroll.
+   * *Muestra el ruido visual de moiré y parpadeo al mover la cámara.*
+5. **Nitidez de Suelo (Anisotropía)**:
+   * Geometría: **Plano 2D** ➔ Textura: **Piedra** ➔ Repetición: **8x8** ➔ Vista rasante inclinada
+   * Captura 1: **Anisotropía = 1x** (fondo borroso).
+   * Captura 2: **Anisotropía = Máxima** (fondo nítido y detallado).
 
 ---
 
-## 🧪 Pruebas Recomendadas para el Alumno
-1. **Prueba de Estiramiento UV**: Geometría `Esfera` ➔ Textura `UV Grid`. Mira los polos superior e inferior de la esfera.
-2. **Prueba de Límite**: Geometría `Cubo` ➔ Textura `Ladrillo` ➔ Repetición `3.0` ➔ Cambia a `ClampToEdgeWrapping`.
-3. **Prueba de Ruido Visual**: Geometría `Plano` ➔ Textura `UV Grid` ➔ Desactiva `Generar Mipmaps` ➔ Filtro Min: `LinearFilter`. Aléjate con el scroll.
-4. **Prueba de Nitidez Rasante**: Geometría `Plano` ➔ Textura `Piedra` ➔ Repetición `8.0` ➔ Inclina la cámara a ras de suelo ➔ Cambia anisotropía de `1x` a `16x`.
+## 🎓 Créditos
+Este proyecto se desarrolló utilizando como base un template de Three.js/Vite diseñado para agilizar la codificación en WebGL. La aplicación ha sido rediseñada, adaptada y ampliada como una herramienta didáctica e interactiva por estudiantes de Computación Gráfica (Computación Visual) para ejemplificar de manera práctica la tubería (pipeline) de texturizado.

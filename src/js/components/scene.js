@@ -283,7 +283,8 @@ export default class MainScene {
       'UV Grid (Mapeo)': 'uv_grid',
       'Ladrillo (Patrón)': 'brick',
       'Madera (Orgánico)': 'wood',
-      'Piedra (Rugoso)': 'stone'
+      'Piedra (Rugoso)': 'stone',
+      'Personalizada (Subida)': 'custom'
     }).name('Textura').onChange(() => this.updateMaterialTexture())
 
     // Carpeta de Wrapping
@@ -399,5 +400,11 @@ export default class MainScene {
         })
       }
     }
+  }
+
+  async loadCustomTexture(url) {
+    await TextureManager.loadCustomTexture(url, 'custom')
+    this.updateStateProperty('textureActive', true)
+    this.updateStateProperty('textureName', 'custom')
   }
 }

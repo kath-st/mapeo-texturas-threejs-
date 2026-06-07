@@ -63,24 +63,43 @@ Los mipmaps estándar asumen que la textura se escala uniformemente en todas las
 Para tu reporte o informe de laboratorio, se recomienda capturar las siguientes configuraciones utilizando el botón **📷 Capturar Vista (PNG)** integrado en la app:
 
 1. **Distorsión UV Esférica**:
-   * Geometría: **Esfera 3D**
-   * Textura: **UV Grid**
+   * Geometría: **Esfera 3D** ➔ Textura: **UV Grid** ➔ Repetición: **1.0 x 1.0**
    * *Muestra cómo el mapeo esférico concentra y deforma los cuadrados de la textura en los polos.*
 2. **Comparación de Wrapping**:
-   * Geometría: **Cubo 3D** ➔ Textura: **Ladrillo** ➔ Repetición: **3x3**
-   * Captura 1: Modo **RepeatWrapping** (mosaico continuo).
-   * Captura 2: Modo **ClampToEdgeWrapping** (ladrillos estirados en las caras laterales).
+   * Geometría: **Cubo 3D** ➔ Textura: **Ladrillo** ➔ Repetición: **3.0 x 3.0**
+   * Captura A: Modo **RepeatWrapping** (mosaico continuo).
+   * Captura B: Modo **ClampToEdgeWrapping** (ladrillos estirados en las caras laterales).
 3. **Magnificación de Filtros**:
    * Geometría: **Cubo 3D** ➔ Textura: **UV Grid** ➔ Zoom de cerca
-   * Captura 1: Filtro **NearestFilter** (píxeles gigantes cuadrados perfectos).
-   * Captura 2: Filtro **LinearFilter** (suavizado borroso).
+   * Captura A: Filtro Mag **NearestFilter** (píxeles gigantes cuadrados perfectos).
+   * Captura B: Filtro Mag **LinearFilter** (suavizado bilineal).
 4. **Aliasing Lejano (Mipmaps Off)**:
-   * Geometría: **Plano 2D** ➔ Textura: **UV Grid** ➔ Mipmaps: **Desactivado** ➔ Aléjate con el scroll.
+   * Geometría: **Plano 2D** ➔ Textura: **UV Grid** ➔ Mipmaps: **Desactivado** ➔ Aléjate con el scroll
    * *Muestra el ruido visual de moiré y parpadeo al mover la cámara.*
 5. **Nitidez de Suelo (Anisotropía)**:
-   * Geometría: **Plano 2D** ➔ Textura: **Piedra** ➔ Repetición: **8x8** ➔ Vista rasante inclinada
-   * Captura 1: **Anisotropía = 1x** (fondo borroso).
-   * Captura 2: **Anisotropía = Máxima** (fondo nítido y detallado).
+   * Geometría: **Plano 2D** ➔ Textura: **Piedra** ➔ Repetición: **8.0 x 8.0** ➔ Vista rasante inclinada
+   * Captura A: **Anisotropía = 1x** (fondo borroso).
+   * Captura B: **Anisotropía = Máxima** (fondo nítido y detallado).
+
+---
+
+## 🛠️ Estructura del Código
+
+La solución está desacoplada para facilitar su estudio y mantenibilidad académica:
+* 📁 `src/public/textures/`: Contiene los archivos PNG de texturas generadas (Grid, Ladrillo, Madera, Piedra).
+* 📁 `src/js/textures.js`: Módulo que maneja la carga asíncrona de texturas y encapsula las llamadas a la API de Three.js para modificar filtros, wrapping, anisotropía y mipmaps.
+* 📁 `src/js/components/scene.js`: Inicializa la escena 3D, agrega iluminación estándar (`AmbientLight`, `DirectionalLight`, `PointLight`), crea las mallas geométricas, administra el ciclo de renderizado y monta los controles interactivos de `lil-gui`.
+* 📁 `src/js/ui.js`: Controla el panel lateral educativo de HTML5, maneja los clics de pestañas, activa los presets de experimentación rápida y actualiza los valores del inspector en tiempo real mediante eventos.
+* 📁 `src/scss/components/_dashboard.scss`: Aplica un diseño oscuro premium con efectos de desenfoque (glassmorphism) e interactividad responsive.
+
+---
+
+## 🧪 Pruebas Recomendadas para el Alumno
+1. **Prueba de Estiramiento UV**: Geometría `Esfera` ➔ Textura `UV Grid`. Mira los polos superior e inferior de la esfera.
+2. **Prueba de Límite**: Geometría `Cubo` ➔ Textura `Ladrillo` ➔ Repetición `3.0` ➔ Cambia a `ClampToEdgeWrapping`.
+3. **Prueba de Ruido Visual**: Geometría `Plano` ➔ Textura `UV Grid` ➔ Desactiva `Generar Mipmaps` ➔ Filtro Min: `LinearFilter`. Aléjate con el scroll.
+4. **Prueba de Nitidez Rasante**: Geometría `Plano` ➔ Textura `Piedra` ➔ Repetición `8.0` ➔ Inclina la cámara a ras de suelo ➔ Cambia anisotropía de `1x` a `16x`.
+5. **Prueba de Imagen Propia**: Presiona el botón **📤 Subir Imagen Propia**, selecciona una imagen de tu computadora (PNG o JPG) y comprueba cómo se mapea sobre las distintas geometrías en tiempo real. Puedes modificar el wrapping y filtrado en ella.
 
 ---
 

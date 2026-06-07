@@ -10,6 +10,8 @@ class UIManager {
     this.toggleBtn = document.getElementById('toggle-dashboard')
     this.dashboard = document.querySelector('.dashboard')
     this.screenshotBtn = document.getElementById('btn-screenshot')
+    this.uploadBtn = document.getElementById('btn-upload')
+    this.fileInput = document.getElementById('texture-upload')
     this.stateValues = {
       geometry: document.getElementById('val-geometry'),
       texture: document.getElementById('val-texture'),
@@ -53,6 +55,20 @@ class UIManager {
       this.screenshotBtn.addEventListener('click', () => {
         if (window.sceneInstance) {
           window.sceneInstance.captureScreenshot()
+        }
+      })
+    }
+
+    // 3.5. Subida de Imagen Personalizada
+    if (this.uploadBtn && this.fileInput) {
+      this.uploadBtn.addEventListener('click', () => {
+        this.fileInput.click()
+      })
+      this.fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0]
+        if (file && window.sceneInstance) {
+          const url = URL.createObjectURL(file)
+          window.sceneInstance.loadCustomTexture(url)
         }
       })
     }
@@ -127,7 +143,8 @@ class UIManager {
       uv_grid: 'UV Grid (Mapeo)',
       brick: 'Ladrillo',
       wood: 'Madera',
-      stone: 'Piedra'
+      stone: 'Piedra',
+      custom: 'Imagen Subida (Custom)'
     }
     return names[key] || key
   }

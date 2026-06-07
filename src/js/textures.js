@@ -63,6 +63,12 @@ class TextureManager {
             texture.generateMipmaps = true
             
             this.textures[key] = texture
+            
+            // Inicializar la textura 'custom' con la cuadrícula por defecto como fallback seguro
+            if (key === 'uv_grid') {
+              this.textures['custom'] = texture
+            }
+            
             resolve(texture)
           },
           undefined,
@@ -75,6 +81,31 @@ class TextureManager {
     })
 
     return Promise.all(promises)
+  }
+
+  /**
+   * Carga una textura personalizada a partir de un Blob URL de imagen local
+   * @param {string} url - Blob URL temporal generado del archivo subido
+   * @param {string} name - Nombre identificador de la textura
+   * @returns {Promise}
+   */
+  loadCustomTexture(url, name = 'custom') {
+    return new Promise((resolve) => {
+      this.loader.load(url, (texture) => {
+        // Configuración inicial estándar idéntica a las texturas fijas
+        texture.wrapS = RepeatWrapping
+        texture.wrapT = RepeatWrapping
+        texture.minFilter = LinearMipmapLinearFilter
+        texture.magFilter = LinearFilter
+        texture.generateMipmaps = true
+
+        this.textures[name] = texture
+        resolve(texture)
+      }, undefined, (err) => {
+        console.error("Error al cargar la textura de imagen subida:", err)
+        resolve(null)
+      })
+    })
   }
 
   /**

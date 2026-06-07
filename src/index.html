@@ -1,35 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    
+    <!-- Meta tags SEO -->
+    <title>Laboratorio Interactivo de Mapeo de Texturas 3D</title>
+    <meta name="description" content="Una herramienta interactiva construida con Three.js y Vite para explorar los conceptos de mapeo UV, envoltura (wrapping), filtros de textura, mipmapping y anisotropía en computación gráfica." />
+    <meta name="keywords" content="threejs, computación gráfica, mapeo de texturas, uv mapping, mipmapping, anisotropía, filtros de textura, webgl" />
+    <meta name="author" content="Laboratorio de Computación Visual" />
+
+    <!-- Fuentes Premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
     <link rel="icon" type="image/x-icon" href="./img/favicon.svg" />
     <link rel="stylesheet" href="./scss/style.scss" />
     <script type="module" defer src="./js/index.js"></script>
-    <title>Vite Threejs template</title>
-    <!-- meta tags example -->
-    <!-- <meta
-      name="keywords"
-      content="shaders, template, webgl, vite, threejs, robin, payot, developer, freelance, creative"
-    />
-    <meta name="author" content="robin payot, robpayot@gmail.com" />
-    <meta name="developer" content="" />
-    <link rel="canonical" href="https://robpayot.github.io/vite-2d-shader-template/dist/" /> -->
   </head>
   <body>
-    <main>
-      <h1 class="main-title">How to code that?</h1>
-      <canvas class="scene"></canvas>
-      <section class="footer">
-        <a href="https://www.youtube.com/watch?v=vEaAheMO0bo" target="_blank" class="footer__link footer__link--learn">LEARN</a>
-        <a href="https://twitter.com/RobinPayot" target="_blank" rel="noopener" class="footer__link">
-          <svg class="footer__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
-        </a>
-        <a href="https://github.com/Robpayot/vite-threejs-template" target="_blank" rel="noopener" class="footer__link">
-          <svg class="footer__icon" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32.58 31.77"><path class="cls-1" d="M16.29,0a16.29,16.29,0,0,0-5.15,31.75c.82.15,1.11-.36,1.11-.79s0-1.41,0-2.77C7.7,29.18,6.74,26,6.74,26a4.36,4.36,0,0,0-1.81-2.39c-1.47-1,.12-1,.12-1a3.43,3.43,0,0,1,2.49,1.68,3.48,3.48,0,0,0,4.74,1.36,3.46,3.46,0,0,1,1-2.18c-3.62-.41-7.42-1.81-7.42-8a6.3,6.3,0,0,1,1.67-4.37,5.94,5.94,0,0,1,.16-4.31s1.37-.44,4.48,1.67a15.41,15.41,0,0,1,8.16,0c3.11-2.11,4.47-1.67,4.47-1.67A5.91,5.91,0,0,1,25,11.07a6.3,6.3,0,0,1,1.67,4.37c0,6.26-3.81,7.63-7.44,8a3.85,3.85,0,0,1,1.11,3c0,2.18,0,3.94,0,4.47s.29.94,1.12.78A16.29,16.29,0,0,0,16.29,0Z"/></svg>
-        </a>
+    <!-- Canvas de renderizado para Three.js -->
+    <canvas class="scene" id="webgl-canvas"></canvas>
+
+    <!-- Botón interactivo para colapsar/expandir el panel educativo -->
+    <button id="toggle-dashboard" class="toggle-btn" aria-label="Alternar panel informativo">✕ Ocultar Guía</button>
+
+    <!-- Dashboard Principal Educativo -->
+    <aside class="dashboard" id="dashboard-sidebar">
+      <header class="dashboard__header">
+        <h1 class="dashboard__title">Laboratorio de Texturas</h1>
+        <p class="dashboard__subtitle">Computación Gráfica y Visual</p>
+      </header>
+
+      <!-- Navegación por Pestañas Teóricas -->
+      <nav class="dashboard__tabs" role="tablist">
+        <button class="dashboard__tab-btn dashboard__tab-btn--active" data-tab="uv" role="tab" id="tab-uv">Mapeo UV</button>
+        <button class="dashboard__tab-btn" data-tab="wrapping" role="tab" id="tab-wrapping">Wrapping</button>
+        <button class="dashboard__tab-btn" data-tab="filtering" role="tab" id="tab-filtering">Filtros</button>
+        <button class="dashboard__tab-btn" data-tab="mipmapping" role="tab" id="tab-mipmapping">Mipmaps</button>
+        <button class="dashboard__tab-btn" data-tab="anisotropy" role="tab" id="tab-anisotropy">Anisotropía</button>
+      </nav>
+
+      <!-- Contenido Teórico e Instructivo -->
+      <div class="dashboard__content">
+        
+        <!-- Pestaña 1: Mapeo UV -->
+        <section class="dashboard__concept-section dashboard__concept-section--active" id="concept-uv" role="tabpanel" aria-labelledby="tab-uv">
+          <h2>Coordenadas UV</h2>
+          <p>El <strong>mapeo de texturas</strong> consiste en proyectar una imagen bidimensional (2D) sobre la superficie de un objeto tridimensional (3D).</p>
+          <p>Para esto se utilizan las coordenadas <strong>U</strong> (eje horizontal) y <strong>V</strong> (eje vertical), que están normalizadas en el rango <code>[0.0, 1.0]</code>. Cada vértice del objeto 3D almacena una coordenada UV que le dice al motor de render qué píxel (téctel) de la imagen debe colocarse sobre dicho vértice.</p>
+          
+          <div class="alert alert--info">
+            <strong>Experimento:</strong> Observa cómo la textura de cuadrícula (UV Grid) envuelve al Cubo, la Esfera y el Plano. En los polos de la esfera notarás cómo los cuadrados se estiran debido a la singularidad de la proyección esférica.
+          </div>
+          
+          <button class="btn btn--primary" data-preset="distorsion-uv">Visualizar Mapeo UV</button>
+        </section>
+
+        <!-- Pestaña 2: Wrapping (Envoltura) -->
+        <section class="dashboard__concept-section" id="concept-wrapping" role="tabpanel" aria-labelledby="tab-wrapping">
+          <h2>Modos de Envoltura (Wrapping)</h2>
+          <p>¿Qué sucede cuando las coordenadas UV asignadas a una geometría superan el límite del rango <code>[0, 1]</code>? Esto se controla mediante el parámetro de wrapping en <code>wrapS</code> (U) y <code>wrapT</code> (V):</p>
+          <ul>
+            <li><strong>RepeatWrapping:</strong> La textura se repite indefinidamente en mosaico (útil para materiales continuos como ladrillo o madera).</li>
+            <li><strong>ClampToEdgeWrapping:</strong> La textura se dibuja una sola vez y los píxeles situados en los bordes se extienden infinitamente hacia el exterior.</li>
+          </ul>
+          
+          <div class="preset-box">
+            <h3>Experimentos Rápidos:</h3>
+            <p>Configura la repetición a un valor alto (ej. 3.0x3.0) para notar la diferencia entre repetir y abrazar el borde:</p>
+            <div class="btn-group">
+              <button class="btn btn--accent" data-preset="wrapping-repeat">Modo Repetir (Repeat)</button>
+              <button class="btn btn--accent" data-preset="wrapping-clamp">Modo Abrazar (Clamp)</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Pestaña 3: Filtros de Textura -->
+        <section class="dashboard__concept-section" id="concept-filtering" role="tabpanel" aria-labelledby="tab-filtering">
+          <h2>Filtros (Minificación y Magnificación)</h2>
+          <p>Cuando un objeto se dibuja en pantalla, es muy raro que un píxel de la pantalla corresponda exactamente a un píxel de la textura (téctel).</p>
+          <ul>
+            <li><strong>NearestFilter (Vecino más Cercano):</strong> WebGL toma el téctel más cercano al centro del píxel. Produce un efecto pixelado y nítido de baja resolución (retro).</li>
+            <li><strong>LinearFilter (Filtro Bilineal):</strong> WebGL calcula un promedio ponderado de los 4 técteles más cercanos. Produce un aspecto mucho más suave y difuminado.</li>
+          </ul>
+          
+          <div class="preset-box">
+            <h3>Experimentos Rápidos:</h3>
+            <p>Acércate al objeto y alterna entre Nearest y Linear para ver el suavizado en los píxeles magnificados:</p>
+            <div class="btn-group">
+              <button class="btn btn--accent" data-preset="filter-nearest">Filtro Vecino (Pixelado)</button>
+              <button class="btn btn--accent" data-preset="filter-linear">Filtro Bilineal (Suave)</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Pestaña 4: Mipmapping -->
+        <section class="dashboard__concept-section" id="concept-mipmapping" role="tabpanel" aria-labelledby="tab-mipmapping">
+          <h2>Mipmapping y Ruido Óptico</h2>
+          <p>Cuando un objeto texturizado está muy lejos del observador, muchos técteles compiten por un solo píxel en pantalla. Si no se filtra adecuadamente, se produce un molesto ruido óptico parpadeante conocido como <strong>aliasing</strong> o <strong>shimmering</strong> al mover la cámara.</p>
+          <p>Para solucionarlo, el <strong>Mipmapping</strong> genera versiones de la textura a resoluciones menores (ej. 512x512, 256x256, 128x128...). WebGL elige automáticamente la resolución adecuada basándose en la distancia del objeto.</p>
+          
+          <div class="alert alert--warning">
+            <strong>Experimento:</strong> Desactiva la casilla "Generar Mipmaps", rota la cámara y aléjate del objeto (especialmente del plano). Notarás un parpadeo de alta frecuencia. Luego, vuelve a activar "Generar Mipmaps" con el filtro de minificación <code>LinearMipmapLinearFilter</code> para apreciar la estabilidad visual.
+          </div>
+        </section>
+
+        <!-- Pestaña 5: Filtrado Anisotrópico -->
+        <section class="dashboard__concept-section" id="concept-anisotropy" role="tabpanel" aria-labelledby="tab-anisotropy">
+          <h2>Filtrado Anisotrópico</h2>
+          <p>Los mipmaps ordinarios asumen áreas de píxeles cuadradas. Sin embargo, cuando miramos una superficie (como una carretera o un plano) desde un ángulo muy inclinado u oblicuo, el píxel proyectado sobre la textura se estira en forma trapezoidal.</p>
+          <p>El <strong>Filtro Anisotrópico</strong> corrige esto tomando muestras adicionales a lo largo de la dirección de la inclinación de la vista, manteniendo las texturas nítidas en la lejanía inclinada.</p>
+          
+          <div class="preset-box">
+            <h3>Experimentos Rápidos:</h3>
+            <p>Carga la geometría <strong>Plano</strong> y rota la cámara para verla desde un ángulo rasante hacia el fondo:</p>
+            <div class="btn-group">
+              <button class="btn btn--accent" data-preset="anisotropy-off">Anisotropía = 1x (Borroso)</button>
+              <button class="btn btn--accent" data-preset="anisotropy-on">Anisotropía Máxima (Nítido)</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Inspector en tiempo real del estado de la textura -->
+      <section class="dashboard__inspector" id="state-inspector">
+        <h3 class="inspector__title">Inspector de Textura</h3>
+        <table class="inspector__table">
+          <tbody>
+            <tr>
+              <td>Geometría:</td>
+              <td><span id="val-geometry" class="inspector__val">Cubo 3D</span></td>
+            </tr>
+            <tr>
+              <td>Textura Activa:</td>
+              <td><span id="val-texture" class="inspector__val">Ninguna</span></td>
+            </tr>
+            <tr>
+              <td>Envoltura (Wrap):</td>
+              <td><span id="val-wrap" class="inspector__val">RepeatWrapping</span></td>
+            </tr>
+            <tr>
+              <td>Repetición (Scale):</td>
+              <td><span id="val-repeat" class="inspector__val">U: 1.0, V: 1.0</span></td>
+            </tr>
+            <tr>
+              <td>Filtro Min (Lejos):</td>
+              <td><span id="val-filter-min" class="inspector__val">LinearMipmapLinearFilter</span></td>
+            </tr>
+            <tr>
+              <td>Filtro Mag (Cerca):</td>
+              <td><span id="val-filter-mag" class="inspector__val">LinearFilter</span></td>
+            </tr>
+            <tr>
+              <td>Mipmapping:</td>
+              <td><span id="val-mipmaps" class="badge">Activado</span></td>
+            </tr>
+            <tr>
+              <td>Anisotropía:</td>
+              <td><span id="val-anisotropy" class="inspector__val">1x</span></td>
+            </tr>
+          </tbody>
+        </table>
       </section>
-    </main>
+
+      <!-- Acciones de Utilidad -->
+      <footer class="dashboard__footer">
+        <button id="btn-screenshot" class="btn btn--screenshot">📷 Capturar Vista (PNG)</button>
+        <div class="dashboard__credits">
+          Curso de Computación Gráfica • UTEC
+        </div>
+      </footer>
+    </aside>
   </body>
 </html>

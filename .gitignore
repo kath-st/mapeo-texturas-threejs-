@@ -1,26 +1,16 @@
-# Logs
-logs
+# Compilados de C++
+*.exe
+*.o
+*.obj
+
+# Capturas de pantalla locales
+*.bmp
+
+# Archivos de registro y depuracion
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-.env
-
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Carpetas temporales de compiladores o editores
+.vs/
+build/
+bin/
+out/

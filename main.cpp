@@ -1297,7 +1297,6 @@ void drawHUD() {
         } else if (state.demoMode == DEMO_OBJ_UV) {
             drawText(30.0f, y, "[V] Invertir orientacion vertical V"); y -= 16.0f;
             drawText(30.0f, y, "[T] Ciclar Texturas"); y -= 16.0f;
-            drawText(30.0f, y, "[Z] Ver Wireframe del modelo"); y -= 16.0f;
         }
     }
 

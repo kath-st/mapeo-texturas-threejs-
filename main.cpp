@@ -126,7 +126,8 @@ struct AppState {
     bool wireframe = false;
     bool hudVisible = true;
     bool objFlipV = false;
-    OBJMesh objMesh;
+    OBJMesh objMeshes[4];
+    int activeObjIndex = 0;
 };
 
 // Variables globales
@@ -150,6 +151,14 @@ const char* texturePaths[4] = {
     "textures/brick.png",
     "textures/wood.png",
     "textures/stone.png"
+};
+
+// Rutas de archivos OBJ predeterminados
+const char* objPaths[4] = {
+    "models/teapot.obj",
+    "models/cube.obj",
+    "models/sphere.obj",
+    "models/minion.obj"
 };
 
 // Prototipos de funciones
@@ -848,10 +857,10 @@ void drawActiveGeometry() {
             drawTexturedCone(1.0f, 2.2f, 64, 32, state.repeatX, state.repeatY);
             break;
         case GEOM_TETERA:
-            if (state.objMesh.loaded && state.objMesh.filename == "teapot.obj") {
+            if (state.objMeshes[0].loaded) {
                 glPushMatrix();
                 glScalef(1.2f, 1.2f, 1.2f);
-                drawOBJModel(state.objMesh, state.repeatX, state.repeatY, state.objFlipV);
+                drawOBJModel(state.objMeshes[0], state.repeatX, state.repeatY, state.objFlipV);
                 glPopMatrix();
             } else {
                 glEnable(GL_TEXTURE_GEN_S);
@@ -870,12 +879,13 @@ void drawActiveGeometry() {
             }
             break;
         case GEOM_OBJ:
-            if (state.objMesh.loaded) {
+            if (state.objMeshes[state.activeObjIndex].loaded) {
                 glPushMatrix();
                 // Centrado y escalado automatico del OBJ
+                const auto& activeMesh = state.objMeshes[state.activeObjIndex];
                 float minX = 1e9, minY = 1e9, minZ = 1e9;
                 float maxX = -1e9, maxY = -1e9, maxZ = -1e9;
-                for (const auto& pos : state.objMesh.positions) {
+                for (const auto& pos : activeMesh.positions) {
                     minX = std::min(minX, pos.x); maxX = std::max(maxX, pos.x);
                     minY = std::min(minY, pos.y); maxY = std::max(maxY, pos.y);
                     minZ = std::min(minZ, pos.z); maxZ = std::max(maxZ, pos.z);
@@ -892,7 +902,7 @@ void drawActiveGeometry() {
                 glScalef(scale, scale, scale);
                 glTranslatef(-cx, -cy, -cz);
                 
-                drawOBJModel(state.objMesh, state.repeatX, state.repeatY, state.objFlipV);
+                drawOBJModel(activeMesh, state.repeatX, state.repeatY, state.objFlipV);
                 glPopMatrix();
             }
             break;
@@ -1138,8 +1148,8 @@ void drawHUD() {
         case GEOM_PLANO: geomStr += "Plano 2D"; break;
         case GEOM_CILINDRO: geomStr += "Cilindro Analitico"; break;
         case GEOM_CONO: geomStr += "Cono Analitico"; break;
-        case GEOM_TETERA: geomStr += (state.objMesh.loaded && state.objMesh.filename == "teapot.obj") ? "Tetera OBJ (Con UV)" : "Tetera GLUT (Gen Auto)"; break;
-        case GEOM_OBJ: geomStr += state.objMesh.loaded ? ("OBJ: " + state.objMesh.filename) : "OBJ No Cargado"; break;
+        case GEOM_TETERA: geomStr += (state.objMeshes[0].loaded) ? "Tetera OBJ (Con UV)" : "Tetera GLUT (Gen Auto)"; break;
+        case GEOM_OBJ: geomStr += state.objMeshes[state.activeObjIndex].loaded ? ("OBJ: " + state.objMeshes[state.activeObjIndex].filename) : "OBJ No Cargado"; break;
     }
     drawText(30.0f, y, geomStr);
     y -= 18.0f;
@@ -1220,14 +1230,16 @@ void drawHUD() {
 
     // Informacion especifica del OBJ si esta activo
     if (state.geometry == GEOM_OBJ || state.demoMode == DEMO_OBJ_UV) {
-        if (!state.objMesh.loaded) {
+        const auto& activeMesh = state.objMeshes[state.activeObjIndex];
+        if (!activeMesh.loaded) {
             glColor3f(1.0f, 0.3f, 0.3f);
-            drawText(30.0f, y, "ERROR: models/teapot.obj no encontrado.");
+            std::string errStr = "ERROR: " + std::string(objPaths[state.activeObjIndex]) + " no encontrado.";
+            drawText(30.0f, y, errStr);
             y -= 20.0f;
         } else {
             glColor3f(0.3f, 1.0f, 0.3f);
             drawText(30.0f, y, "OBJ cargado correctamente."); y -= 16.0f;
-            if (!state.objMesh.hasTexcoords) {
+            if (!activeMesh.hasTexcoords) {
                 glColor3f(1.0f, 0.3f, 0.3f);
                 drawText(30.0f, y, "ATENCION: Este modelo no tiene coords vt."); y -= 16.0f;
                 drawText(30.0f, y, "No se puede demostrar desenvuelto UV.");
@@ -1235,7 +1247,7 @@ void drawHUD() {
             } else {
                 glColor3f(0.6f, 0.8f, 1.0f);
                 char infoBuf[80];
-                sprintf(infoBuf, "Malla: %s | Triangulos: %d", state.objMesh.filename.c_str(), (int)state.objMesh.triangles.size());
+                sprintf(infoBuf, "Malla: %s | Triangulos: %d", activeMesh.filename.c_str(), (int)activeMesh.triangles.size());
                 drawText(30.0f, y, infoBuf); y -= 16.0f;
                 std::string flipStr = "Invertir V del OBJ: ";
                 flipStr += state.objFlipV ? "SI (Habilitado)" : "NO (Deshabilitado)";
@@ -1267,6 +1279,9 @@ void drawHUD() {
 
     if (state.demoMode == DEMO_LIBRE) {
         drawText(30.0f, y, "[G] Ciclar Geometria"); y -= 16.0f;
+        if (state.geometry == GEOM_OBJ) {
+            drawText(30.0f, y, "[O] Ciclar Modelo (Tetera/Cubo/Esf/Minion)"); y -= 16.0f;
+        }
         drawText(30.0f, y, "[T] Ciclar Texturas"); y -= 16.0f;
         drawText(30.0f, y, "[U] Cargar Textura Local"); y -= 16.0f;
         drawText(30.0f, y, "[W] Ciclar Wrap (Repeat/Clamp/Mirror)"); y -= 16.0f;
@@ -1295,6 +1310,7 @@ void drawHUD() {
             drawText(30.0f, y, "[W] Cambiar Wrap Mode"); y -= 16.0f;
             drawText(30.0f, y, "[+] / [-] Modificar Repeticion"); y -= 16.0f;
         } else if (state.demoMode == DEMO_OBJ_UV) {
+            drawText(30.0f, y, "[O] Ciclar Modelo (Tetera/Cubo/Esf/Minion)"); y -= 16.0f;
             drawText(30.0f, y, "[V] Invertir orientacion vertical V"); y -= 16.0f;
             drawText(30.0f, y, "[T] Ciclar Texturas"); y -= 16.0f;
         }
@@ -1745,6 +1761,10 @@ void keyboard(unsigned char key, int x, int y) {
                 }
             }
             break;
+        case 'o':
+        case 'O':
+            state.activeObjIndex = (state.activeObjIndex + 1) % 4;
+            break;
         case 'u':
         case 'U':
             selectAndLoadCustomTexture();
@@ -1864,8 +1884,10 @@ void keyboard(unsigned char key, int x, int y) {
             state.textureActive = true;
             state.wireframe = false;
             cameraDistance = 4.0f;
-            if (!state.objMesh.loaded) {
-                loadOBJ("models/teapot.obj", state.objMesh);
+            for (int i = 0; i < 4; i++) {
+                if (!state.objMeshes[i].loaded) {
+                    loadOBJ(objPaths[i], state.objMeshes[i]);
+                }
             }
             break;
     }
@@ -1874,20 +1896,24 @@ void keyboard(unsigned char key, int x, int y) {
 
 // Clics del Raton
 void mouse(int button, int state_mouse, int x, int y) {
-    activeMouseButton = button;
     if (state_mouse == GLUT_DOWN) {
+        activeMouseButton = button;
         lastMouseX = x;
         lastMouseY = y;
+    } else if (state_mouse == GLUT_UP) {
+        if (activeMouseButton == button) {
+            activeMouseButton = -1;
+        }
     }
 }
 
 // Movimiento del Raton (Arrastrar)
 void motion(int x, int y) {
     if (activeMouseButton == GLUT_LEFT_BUTTON) {
-        float dx = (x - lastMouseX) * 0.005f;
-        float dy = (y - lastMouseY) * 0.005f;
-        cameraAngleX += dx;
-        cameraAngleY += dy;
+        float dx = (x - lastMouseX) * 0.012f;
+        float dy = (y - lastMouseY) * 0.012f;
+        cameraAngleX -= dx; // Direccion natural de arrastre
+        cameraAngleY -= dy; // Direccion natural de arrastre
 
         if (cameraAngleY > 1.4f) cameraAngleY = 1.4f;
         if (cameraAngleY < -1.4f) cameraAngleY = -1.4f;
@@ -1941,8 +1967,10 @@ int main(int argc, char** argv) {
     // Cargar e inicializar texturas
     initTextures();
 
-    // Intentar precargar la tetera por defecto si existe
-    loadOBJ("models/teapot.obj", state.objMesh);
+    // Intentar precargar los modelos OBJ predeterminados
+    for (int i = 0; i < 4; i++) {
+        loadOBJ(objPaths[i], state.objMeshes[i]);
+    }
 
     // Registrar Callbacks
     glutDisplayFunc(display);

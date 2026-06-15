@@ -4,7 +4,7 @@ Este es un proyecto educativo e interactivo desarrollado en C++ y OpenGL utiliza
 
 ## Caracteristicas del Laboratorio
 
-- Geometrias Soportadas: Cubo 3D, Esfera calculada matematicamente con coordenadas de textura y normales correctas, y un Plano 2D horizontal en los ejes X y Z.
+- Geometrias Soportadas: Cubo 3D, Esfera calculada matematicamente con coordenadas de textura y normales correctas, Plano 2D horizontal en los ejes X y Z, Cilindro analitico, Cono analitico, y soporte para modelos OBJ complejos (incluyendo Tetera, Cubo OBJ, Esfera OBJ y un Minion low-poly).
 - Control de Texturas: UV Grid de mapeo, Patron de Ladrillos, Madera organica, Piedra rugosa y opcion de desactivar texturas (color plano).
 - Modos de Envoltura (Wrapping): Comparacion entre repeticion (GL_REPEAT) y abrazado de bordes (GL_CLAMP_TO_EDGE).
 - Filtros de Textura: Alternancia entre Nearest, Linear, y las 4 variantes de filtrado con Mipmaps (GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR_MIPMAP_LINEAR).
@@ -49,16 +49,17 @@ Esto compilará el archivo `main.cpp` enlazando las librerías locales, y ejecut
   - `[3]`: **Mipmapping**: Muestra dos planos texturizados en la distancia para comparar el aliasing/centelleo `Sin Mipmaps` (izq.) vs `Con Mipmaps` (der.).
   - `[4]`: **Modos de Repetición (Wrap)**: Muestra una comparativa simultánea de tres figuras usando `GL_REPEAT` (izq.), `GL_CLAMP_TO_EDGE` (centro) y `GL_MIRRORED_REPEAT` (der.).
   - `[5]`: **Proyecciones Analíticas**: Demuestra el mapeo planar, esférico, cilíndrico y cónico sobre geometrías analíticas.
-  - `[6]`: **Desenvuelto UV / OBJ**: Renderiza un modelo `.obj` importado que demuestra coordenadas de mapeo UV complejas (`vt`) exportadas desde software de modelado.
+  - `[6]`: **Desenvuelto UV / OBJ**: Renderiza un modelo `.obj` importado que demuestra coordenadas de mapeo UV complejas (`vt`) exportadas desde software de modelado. Permite alternar entre varios modelos preestablecidos (Tetera, Cubo, Esfera, Minion).
 - **[Z]**: Alternar modo visual entre **Sólido Texturizado** y **Wireframe puro** (dibuja la malla triangulada en color cian sin iluminación ni texturas).
 - **[H]**: Mostrar / Ocultar el panel de la interfaz **HUD**. Al ocultarlo, la escena 3D se expande para ocupar toda la pantalla.
 - **[V]**: Invertir la orientación de la coordenada vertical **V** únicamente para el modelo OBJ cargado.
+- **[O]**: Ciclar entre los modelos OBJ preestablecidos (**Tetera**, **Cubo**, **Esfera**, **Minion**) cuando el modelo OBJ está seleccionado (en el Modo 6 o en el Modo Libre).
 - **[S]**: Guardar una **captura de pantalla** en formato BMP en la raíz del proyecto.
 - **[ESC]**: Salir de la aplicación.
 
 ### Controles de Parámetros (Modo Libre)
 
-- **[G]**: Ciclar geometría activa: *Cubo -> Esfera -> Plano -> Cilindro Analítico -> Cono Analítico -> Tetera (GLUT con Gen Auto) -> Tetera (OBJ con UV Unwrap)*.
+- **[G]**: Ciclar geometría activa: *Cubo -> Esfera -> Plano -> Cilindro Analítico -> Cono Analítico -> Tetera (GLUT con Gen Auto) -> Modelo OBJ Intercambiable*.
 - **[T]**: Ciclar textura activa: *Grid UV -> Ladrillos -> Madera -> Piedra -> Tablero Checker (alto contraste) -> Imagen Personalizada -> Sin textura (Color plano)*.
 - **[U]**: Cargar una imagen de textura personalizada (.png, .jpg, .bmp) desde tu computadora.
 - **[W]**: Ciclar modo de envoltura (wrapping): *GL_REPEAT -> GL_CLAMP_TO_EDGE -> GL_MIRRORED_REPEAT*.

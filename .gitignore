@@ -14,3 +14,8 @@
 build/
 bin/
 out/
+
+# Permitir archivos de modelos OBJ
+!models/
+!models/*.obj
+

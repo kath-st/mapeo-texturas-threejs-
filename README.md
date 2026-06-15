@@ -33,23 +33,38 @@ build.bat
 Esto compilará el archivo `main.cpp` enlazando las librerías locales, y ejecutará la aplicación de forma automática.
 
 
-## Controles e Interaccion
+## Controles e Interacción
 
-### Control de Camara con el Raton
+### Control de Cámara con el Ratón
 
-- Arrastrar con Clic Izquierdo: Rotar camara (Pitch y Yaw).
-- Arrastrar con Clic Derecho / Rueda del Raton: Zoom (acercar/alejar).
+- Arrastrar con Clic Izquierdo: Rotar cámara (Pitch y Yaw).
+- Arrastrar con Clic Derecho / Rueda del Ratón: Zoom orbital (acercar/alejar con paso adaptativo y límites extendidos de `0.35` a `60.0`).
 
-### Atajos de Teclado
+### Atajos de Teclado (Controles Globales)
 
-- G: Cambiar geometria (Cubo, Esfera, Plano).
-- T: Ciclar texturas fijas (Grid, Ladrillo, Madera, Piedra, Personalizada o Sin Textura).
-- U: Cargar imagen propia (Abre el explorador de archivos para elegir un archivo local).
-- W: Cambiar modo de envoltura (GL_REPEAT vs GL_CLAMP_TO_EDGE).
-- + / -: Aumentar o disminuir la repeticion UV.
-- M: Activar o desactivar mipmapping.
-- F: Cambiar filtro de minificacion (Lejos).
-- N: Cambiar filtro de magnificacion (Cerca).
-- A / D: Duplicar o reducir a la mitad el nivel de anisotropia.
-- S: Tomar captura de pantalla (BMP).
-- ESC: Salir de la aplicacion.
+- **[0] a [6]**: Cambiar el **Modo Didáctico Activo**:
+  - `[0]`: **Modo Libre**: Permite control total y personalización de todos los parámetros.
+  - `[1]`: **Interpolación UV**: Demuestra la interpolación lineal de coordenadas UV sobre triángulos. Muestra la línea de costura roja en la esfera/cilindro.
+  - `[2]`: **Filtrado de Textura**: Renderiza una comparación lado a lado con el filtrado `GL_NEAREST` (izq.) vs `GL_LINEAR` (der.).
+  - `[3]`: **Mipmapping**: Muestra dos planos texturizados en la distancia para comparar el aliasing/centelleo `Sin Mipmaps` (izq.) vs `Con Mipmaps` (der.).
+  - `[4]`: **Modos de Repetición (Wrap)**: Muestra una comparativa simultánea de tres figuras usando `GL_REPEAT` (izq.), `GL_CLAMP_TO_EDGE` (centro) y `GL_MIRRORED_REPEAT` (der.).
+  - `[5]`: **Proyecciones Analíticas**: Demuestra el mapeo planar, esférico, cilíndrico y cónico sobre geometrías analíticas.
+  - `[6]`: **Desenvuelto UV / OBJ**: Renderiza un modelo `.obj` importado que demuestra coordenadas de mapeo UV complejas (`vt`) exportadas desde software de modelado.
+- **[Z]**: Alternar modo visual entre **Sólido Texturizado** y **Wireframe puro** (dibuja la malla triangulada en color cian sin iluminación ni texturas).
+- **[H]**: Mostrar / Ocultar el panel de la interfaz **HUD**. Al ocultarlo, la escena 3D se expande para ocupar toda la pantalla.
+- **[V]**: Invertir la orientación de la coordenada vertical **V** únicamente para el modelo OBJ cargado.
+- **[S]**: Guardar una **captura de pantalla** en formato BMP en la raíz del proyecto.
+- **[ESC]**: Salir de la aplicación.
+
+### Controles de Parámetros (Modo Libre)
+
+- **[G]**: Ciclar geometría activa: *Cubo -> Esfera -> Plano -> Cilindro Analítico -> Cono Analítico -> Tetera (GLUT con Gen Auto) -> Tetera (OBJ con UV Unwrap)*.
+- **[T]**: Ciclar textura activa: *Grid UV -> Ladrillos -> Madera -> Piedra -> Tablero Checker (alto contraste) -> Imagen Personalizada -> Sin textura (Color plano)*.
+- **[U]**: Cargar una imagen de textura personalizada (.png, .jpg, .bmp) desde tu computadora.
+- **[W]**: Ciclar modo de envoltura (wrapping): *GL_REPEAT -> GL_CLAMP_TO_EDGE -> GL_MIRRORED_REPEAT*.
+- **[+] / [-]**: Aumentar o disminuir la escala de repetición de textura (rango `0.5x` a `10.0x`).
+- **[M]**: Activar o desactivar el uso de Mipmaps en la minificación.
+- **[F]**: Ciclar filtro de minificación (Lejos): *GL_NEAREST, GL_LINEAR, y las 4 variantes de Mipmapping*.
+- **[N]**: Alternar filtro de magnificación (Cerca): *GL_NEAREST vs GL_LINEAR*.
+- **[A] / [D]**: Duplicar o reducir a la mitad el nivel de anisotropía en el filtrado de textura.
+

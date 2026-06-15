@@ -14,17 +14,24 @@ Este es un proyecto educativo e interactivo desarrollado en C++ y OpenGL utiliza
 - HUD Informativo: Panel lateral izquierdo translucido que muestra el estado de todos los parametros y la guia de controles.
 - Gizmo de Ejes: Indicador en la esquina superior derecha que muestra la orientacion en 3D de los ejes X (Rojo), Y (Verde) y Z (Azul) sincronizado con el giro de camara.
 
-## Requisitos e Instalacion
+## Requisitos e Instalación
 
-Para ejecutar este proyecto en Windows, necesitas tener instalado el compilador GCC/G++ (por ejemplo, mediante MinGW) y la libreria FreeGLUT.
+Para compilar y ejecutar este proyecto en Windows, solo necesitas tener instalado el compilador **GCC/G++** (por ejemplo, a través de **MinGW**).
 
-### Compilacion
+> [!NOTE]
+> Las dependencias de **FreeGLUT** (archivos de cabecera `.h`, librerías estáticas `.a` y la librería dinámica `.dll`) ya vienen incluidas dentro del repositorio para facilitar su configuración:
+> - `include/GL/`: Archivos de cabecera para FreeGLUT (`freeglut.h`, etc.).
+> - `lib/`: Librerías estáticas de FreeGLUT (`libfreeglut.a`, `libfreeglut.dll.a`).
+> - `libfreeglut.dll`: Librería dinámica requerida en tiempo de ejecución (ubicada en el directorio raíz).
 
-Navega a la carpeta del proyecto y ejecuta el archivo por lotes en la consola:
+### Compilación
+
+Navega a la carpeta del proyecto y ejecuta el archivo por lotes en la terminal/CMD:
 ```bash
 build.bat
 ```
-Esto compilara el archivo main.cpp, enlazara las librerias graficas necesarias y ejecutara la aplicacion automaticamente si no hay errores.
+Esto compilará el archivo `main.cpp` enlazando las librerías locales, y ejecutará la aplicación de forma automática.
+
 
 ## Controles e Interaccion
 

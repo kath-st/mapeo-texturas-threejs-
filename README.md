@@ -50,16 +50,15 @@ Esto compilará el archivo `main.cpp` enlazando las librerías locales, y ejecut
   - `[4]`: **Modos de Repetición (Wrap)**: Muestra una comparativa simultánea de tres figuras usando `GL_REPEAT` (izq.), `GL_CLAMP_TO_EDGE` (centro) y `GL_MIRRORED_REPEAT` (der.).
   - `[5]`: **Proyecciones Analíticas**: Demuestra el mapeo planar, esférico, cilíndrico y cónico sobre geometrías analíticas.
   - `[6]`: **Desenvuelto UV / OBJ**: Renderiza un modelo `.obj` importado que demuestra coordenadas de mapeo UV complejas (`vt`) exportadas desde software de modelado. Permite alternar entre varios modelos preestablecidos (Tetera, Cubo, Esfera, Minion).
-- **[Z]**: Alternar modo visual entre **Sólido Texturizado** y **Wireframe puro** (dibuja la malla triangulada en color cian sin iluminación ni texturas).
+- **[A]**: Cambiar de Modelo de Sólido (cicla secuencialmente entre las figuras geométricas del laboratorio).
+- **[Z]**: Alternar Wireframe (permite activar/desactivar la visualización de la malla poligonal).
 - **[H]**: Mostrar / Ocultar el panel de la interfaz **HUD**. Al ocultarlo, la escena 3D se expande para ocupar toda la pantalla.
-- **[V]**: Invertir la orientación de la coordenada vertical **V** únicamente para el modelo OBJ cargado.
-- **[O]**: Ciclar entre los modelos OBJ preestablecidos (**Tetera**, **Cubo**, **Esfera**, **Minion**) cuando el modelo OBJ está seleccionado (en el Modo 6 o en el Modo Libre).
 - **[S]**: Guardar una **captura de pantalla** en formato BMP en la raíz del proyecto.
 - **[ESC]**: Salir de la aplicación.
 
 ### Controles de Parámetros (Modo Libre)
 
-- **[G]**: Ciclar geometría activa: *Cubo -> Esfera -> Plano -> Cilindro Analítico -> Cono Analítico -> Tetera (GLUT con Gen Auto) -> Modelo OBJ Intercambiable*.
+- **[G]**: Ciclar geometría activa: *Cubo -> Esfera -> Plano -> Cilindro Analítico -> Cono Analítico -> Modelo OBJ Intercambiable*.
 - **[T]**: Ciclar textura activa: *Grid UV -> Ladrillos -> Madera -> Piedra -> Tablero Checker (alto contraste) -> Imagen Personalizada -> Sin textura (Color plano)*.
 - **[U]**: Cargar una imagen de textura personalizada (.png, .jpg, .bmp) desde tu computadora.
 - **[W]**: Ciclar modo de envoltura (wrapping): *GL_REPEAT -> GL_CLAMP_TO_EDGE -> GL_MIRRORED_REPEAT*.
@@ -67,5 +66,4 @@ Esto compilará el archivo `main.cpp` enlazando las librerías locales, y ejecut
 - **[M]**: Activar o desactivar el uso de Mipmaps en la minificación.
 - **[F]**: Ciclar filtro de minificación (Lejos): *GL_NEAREST, GL_LINEAR, y las 4 variantes de Mipmapping*.
 - **[N]**: Alternar filtro de magnificación (Cerca): *GL_NEAREST vs GL_LINEAR*.
-- **[A] / [D]**: Duplicar o reducir a la mitad el nivel de anisotropía en el filtrado de textura.
-
+- **[E] / [D]**: Duplicar o reducir a la mitad el nivel de anisotropía en el filtrado de textura.

@@ -41,7 +41,6 @@ enum GeometryType {
     GEOM_PLANO,
     GEOM_CILINDRO,
     GEOM_CONO,
-    GEOM_TETERA,
     GEOM_OBJ
 };
 
@@ -125,7 +124,6 @@ struct AppState {
     float baseColor[3] = {0.23f, 0.51f, 0.96f}; // #3b82f6
     bool wireframe = false;
     bool hudVisible = true;
-    bool objFlipV = false;
     OBJMesh objMeshes[4];
     int activeObjIndex = 0;
 };
@@ -141,6 +139,10 @@ float maxAnisotropy = 1.0f;
 float cameraAngleX = 0.8f;   // Rotacion yaw
 float cameraAngleY = 0.5f;   // Rotacion pitch
 float cameraDistance = 5.0f; // Distancia al centro
+float cameraTargetX = 0.0f;
+float cameraTargetY = 0.0f;
+float cameraTargetZ = 0.0f;
+bool isPanning = false;
 int lastMouseX = 0;
 int lastMouseY = 0;
 int activeMouseButton = -1;
@@ -664,7 +666,7 @@ bool loadOBJ(const std::string& path, OBJMesh& mesh) {
 }
 
 // Dibujar OBJ model cargado
-void drawOBJModel(const OBJMesh& mesh, float repeatX, float repeatY, bool flipV) {
+void drawOBJModel(const OBJMesh& mesh, float repeatX, float repeatY) {
     if (!mesh.loaded) return;
 
     glBegin(GL_TRIANGLES);
@@ -686,7 +688,7 @@ void drawOBJModel(const OBJMesh& mesh, float repeatX, float repeatY, bool flipV)
         }
         if (mesh.hasTexcoords && tri.a.vtIndex >= 0 && tri.a.vtIndex < (int)mesh.texcoords.size()) {
             const auto& tc = mesh.texcoords[tri.a.vtIndex];
-            glTexCoord2f(tc.u * repeatX, (flipV ? 1.0f - tc.v : tc.v) * repeatY);
+            glTexCoord2f(tc.u * repeatX, tc.v * repeatY);
         }
         glVertex3f(mesh.positions[tri.a.vIndex].x, mesh.positions[tri.a.vIndex].y, mesh.positions[tri.a.vIndex].z);
 
@@ -707,7 +709,7 @@ void drawOBJModel(const OBJMesh& mesh, float repeatX, float repeatY, bool flipV)
         }
         if (mesh.hasTexcoords && tri.b.vtIndex >= 0 && tri.b.vtIndex < (int)mesh.texcoords.size()) {
             const auto& tc = mesh.texcoords[tri.b.vtIndex];
-            glTexCoord2f(tc.u * repeatX, (flipV ? 1.0f - tc.v : tc.v) * repeatY);
+            glTexCoord2f(tc.u * repeatX, tc.v * repeatY);
         }
         glVertex3f(mesh.positions[tri.b.vIndex].x, mesh.positions[tri.b.vIndex].y, mesh.positions[tri.b.vIndex].z);
 
@@ -728,7 +730,7 @@ void drawOBJModel(const OBJMesh& mesh, float repeatX, float repeatY, bool flipV)
         }
         if (mesh.hasTexcoords && tri.c.vtIndex >= 0 && tri.c.vtIndex < (int)mesh.texcoords.size()) {
             const auto& tc = mesh.texcoords[tri.c.vtIndex];
-            glTexCoord2f(tc.u * repeatX, (flipV ? 1.0f - tc.v : tc.v) * repeatY);
+            glTexCoord2f(tc.u * repeatX, tc.v * repeatY);
         }
         glVertex3f(mesh.positions[tri.c.vIndex].x, mesh.positions[tri.c.vIndex].y, mesh.positions[tri.c.vIndex].z);
     }
@@ -856,28 +858,6 @@ void drawActiveGeometry() {
         case GEOM_CONO:
             drawTexturedCone(1.0f, 2.2f, 64, 32, state.repeatX, state.repeatY);
             break;
-        case GEOM_TETERA:
-            if (state.objMeshes[0].loaded) {
-                glPushMatrix();
-                glScalef(1.2f, 1.2f, 1.2f);
-                drawOBJModel(state.objMeshes[0], state.repeatX, state.repeatY, state.objFlipV);
-                glPopMatrix();
-            } else {
-                glEnable(GL_TEXTURE_GEN_S);
-                glEnable(GL_TEXTURE_GEN_T);
-                GLfloat sGenParams[] = {1.0f, 0.0f, 0.0f, 0.0f};
-                GLfloat tGenParams[] = {0.0f, 1.0f, 0.0f, 0.0f};
-                glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-                glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-                glTexGenfv(GL_S, GL_OBJECT_PLANE, sGenParams);
-                glTexGenfv(GL_T, GL_OBJECT_PLANE, tGenParams);
-                
-                glutSolidTeapot(1.2);
-                
-                glDisable(GL_TEXTURE_GEN_S);
-                glDisable(GL_TEXTURE_GEN_T);
-            }
-            break;
         case GEOM_OBJ:
             if (state.objMeshes[state.activeObjIndex].loaded) {
                 glPushMatrix();
@@ -902,7 +882,7 @@ void drawActiveGeometry() {
                 glScalef(scale, scale, scale);
                 glTranslatef(-cx, -cy, -cz);
                 
-                drawOBJModel(activeMesh, state.repeatX, state.repeatY, state.objFlipV);
+                drawOBJModel(activeMesh, state.repeatX, state.repeatY);
                 glPopMatrix();
             }
             break;
@@ -1143,13 +1123,24 @@ void drawHUD() {
 
     std::string geomStr = "Geometria: ";
     switch (state.geometry) {
-        case GEOM_CUBO: geomStr += "Cubo 3D"; break;
-        case GEOM_ESFERA: geomStr += "Esfera 3D (Corregida)"; break;
+        case GEOM_CUBO: geomStr += "Cubo (Analitico)"; break;
+        case GEOM_ESFERA: geomStr += "Esfera (Analitica)"; break;
         case GEOM_PLANO: geomStr += "Plano 2D"; break;
-        case GEOM_CILINDRO: geomStr += "Cilindro Analitico"; break;
-        case GEOM_CONO: geomStr += "Cono Analitico"; break;
-        case GEOM_TETERA: geomStr += (state.objMeshes[0].loaded) ? "Tetera OBJ (Con UV)" : "Tetera GLUT (Gen Auto)"; break;
-        case GEOM_OBJ: geomStr += state.objMeshes[state.activeObjIndex].loaded ? ("OBJ: " + state.objMeshes[state.activeObjIndex].filename) : "OBJ No Cargado"; break;
+        case GEOM_CILINDRO: geomStr += "Cilindro (Analitico)"; break;
+        case GEOM_CONO: geomStr += "Cono (Analitico)"; break;
+        case GEOM_OBJ:
+            if (state.objMeshes[state.activeObjIndex].loaded) {
+                switch (state.activeObjIndex) {
+                    case 0: geomStr += "Tetera (OBJ)"; break;
+                    case 1: geomStr += "Cubo (OBJ)"; break;
+                    case 2: geomStr += "Esfera (OBJ)"; break;
+                    case 3: geomStr += "Minion (OBJ)"; break;
+                    default: geomStr += "OBJ Desconocido"; break;
+                }
+            } else {
+                geomStr += "OBJ No Cargado";
+            }
+            break;
     }
     drawText(30.0f, y, geomStr);
     y -= 18.0f;
@@ -1248,10 +1239,7 @@ void drawHUD() {
                 glColor3f(0.6f, 0.8f, 1.0f);
                 char infoBuf[80];
                 sprintf(infoBuf, "Malla: %s | Triangulos: %d", activeMesh.filename.c_str(), (int)activeMesh.triangles.size());
-                drawText(30.0f, y, infoBuf); y -= 16.0f;
-                std::string flipStr = "Invertir V del OBJ: ";
-                flipStr += state.objFlipV ? "SI (Habilitado)" : "NO (Deshabilitado)";
-                drawText(30.0f, y, flipStr);
+                drawText(30.0f, y, infoBuf);
                 y -= 20.0f;
             }
         }
@@ -1274,14 +1262,11 @@ void drawHUD() {
     
     // Controles globales siempre presentes
     drawText(30.0f, y, "[0]-[6] Cambiar Modo Didactico"); y -= 16.0f;
-    drawText(30.0f, y, "[Z] Alternar Solido / Wireframe"); y -= 16.0f;
+    drawText(30.0f, y, "[A] Cambiar de Modelo de Solido"); y -= 16.0f;
+    drawText(30.0f, y, "[Z] Alternar Wireframe"); y -= 16.0f;
     drawText(30.0f, y, "[H] Mostrar/Ocultar HUD"); y -= 16.0f;
 
     if (state.demoMode == DEMO_LIBRE) {
-        drawText(30.0f, y, "[G] Ciclar Geometria"); y -= 16.0f;
-        if (state.geometry == GEOM_OBJ) {
-            drawText(30.0f, y, "[O] Ciclar Modelo (Tetera/Cubo/Esf/Minion)"); y -= 16.0f;
-        }
         drawText(30.0f, y, "[T] Ciclar Texturas"); y -= 16.0f;
         drawText(30.0f, y, "[U] Cargar Textura Local"); y -= 16.0f;
         drawText(30.0f, y, "[W] Ciclar Wrap (Repeat/Clamp/Mirror)"); y -= 16.0f;
@@ -1289,32 +1274,25 @@ void drawHUD() {
         drawText(30.0f, y, "[M] Activar/Desactivar Mipmapping"); y -= 16.0f;
         drawText(30.0f, y, "[F] Ciclar Filtro Minificacion"); y -= 16.0f;
         drawText(30.0f, y, "[N] Alternar Filtro Magnificacion"); y -= 16.0f;
-        drawText(30.0f, y, "[A] / [D] Modificar Anisotropia"); y -= 16.0f;
-    } else {
-        if (state.demoMode == DEMO_INTERPOLACION_UV) {
-            drawText(30.0f, y, "[G] Alternar Esfera / Cilindro"); y -= 16.0f;
-            drawText(30.0f, y, "[Z] Activar Wireframe para ver triangulos"); y -= 16.0f;
+        drawText(30.0f, y, "[E] / [D] Modificar Anisotropia"); y -= 16.0f;
+        } else if (state.demoMode == DEMO_INTERPOLACION_UV) {
+            // No custom controls needed
         } else if (state.demoMode == DEMO_FILTRADO) {
             drawText(30.0f, y, "[T] Ciclar Texturas (Se sugiere Checker)"); y -= 16.0f;
             drawText(30.0f, y, "[M] Alternar Mipmapping en lado derecho"); y -= 16.0f;
             drawText(30.0f, y, "* Usa Zoom para acercarte y ver pixeles."); y -= 16.0f;
         } else if (state.demoMode == DEMO_MIPMAPPING) {
             drawText(30.0f, y, "[T] Ciclar Texturas"); y -= 16.0f;
-            drawText(30.0f, y, "* Aleja la camara para ver aliasing a la izq."); y -= 16.0f;
+            drawText(30.0f, y, "* Usa arrastrar con Shift o Boton Medio para desplazarte."); y -= 16.0f;
         } else if (state.demoMode == DEMO_WRAP) {
-            drawText(30.0f, y, "[G] Cambiar Geometria de comparacion"); y -= 16.0f;
             drawText(30.0f, y, "[T] Ciclar Texturas"); y -= 16.0f;
         } else if (state.demoMode == DEMO_PROYECCIONES) {
-            drawText(30.0f, y, "[G] Cambiar Geometria (Plano/Esf/Cil/Cono)"); y -= 16.0f;
             drawText(30.0f, y, "[T] Ciclar Texturas (Grid recomendado)"); y -= 16.0f;
             drawText(30.0f, y, "[W] Cambiar Wrap Mode"); y -= 16.0f;
             drawText(30.0f, y, "[+] / [-] Modificar Repeticion"); y -= 16.0f;
         } else if (state.demoMode == DEMO_OBJ_UV) {
-            drawText(30.0f, y, "[O] Ciclar Modelo (Tetera/Cubo/Esf/Minion)"); y -= 16.0f;
-            drawText(30.0f, y, "[V] Invertir orientacion vertical V"); y -= 16.0f;
             drawText(30.0f, y, "[T] Ciclar Texturas"); y -= 16.0f;
         }
-    }
 
     drawText(30.0f, y, "[S] Guardar Captura de Pantalla (BMP)"); y -= 16.0f;
     drawText(30.0f, y, "[ESC] Salir");
@@ -1385,6 +1363,19 @@ void captureScreenshot(const std::string& filename) {
     std::cout << "Captura de pantalla guardada en " << filename << std::endl;
 }
 
+void drawCustomPlane(float xMin, float xMax, float zMin, float zMax, float repeatX, float repeatY) {
+    glBegin(GL_TRIANGLES);
+    // Triangulo 1
+    glNormal3f(0.0f, 1.0f, 0.0f); glTexCoord2f(0.0f, 0.0f); glVertex3f(xMin, 0.0f, zMax);
+    glNormal3f(0.0f, 1.0f, 0.0f); glTexCoord2f(repeatX, 0.0f); glVertex3f(xMax, 0.0f, zMax);
+    glNormal3f(0.0f, 1.0f, 0.0f); glTexCoord2f(repeatX, repeatY); glVertex3f(xMax, 0.0f, zMin);
+    // Triangulo 2
+    glNormal3f(0.0f, 1.0f, 0.0f); glTexCoord2f(0.0f, 0.0f); glVertex3f(xMin, 0.0f, zMax);
+    glNormal3f(0.0f, 1.0f, 0.0f); glTexCoord2f(repeatX, repeatY); glVertex3f(xMax, 0.0f, zMin);
+    glNormal3f(0.0f, 1.0f, 0.0f); glTexCoord2f(0.0f, repeatY); glVertex3f(xMin, 0.0f, zMin);
+    glEnd();
+}
+
 // Funcion principal de renderizado
 void display() {
     glClearColor(0.07f, 0.07f, 0.08f, 1.0f);
@@ -1405,12 +1396,12 @@ void display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    // Posicionamiento de camara orbital
-    float cx = cameraDistance * cos(cameraAngleY) * sin(cameraAngleX);
-    float cy = cameraDistance * sin(cameraAngleY);
-    float cz = cameraDistance * cos(cameraAngleY) * cos(cameraAngleX);
+    // Posicionamiento de camara orbital con desplazamiento (pan)
+    float cx = cameraTargetX + cameraDistance * cos(cameraAngleY) * sin(cameraAngleX);
+    float cy = cameraTargetY + cameraDistance * sin(cameraAngleY);
+    float cz = cameraTargetZ + cameraDistance * cos(cameraAngleY) * cos(cameraAngleX);
     float upY = (cos(cameraAngleY) >= 0.0f) ? 1.0f : -1.0f;
-    gluLookAt(cx, cy, cz, 0.0f, 0.0f, 0.0f, 0.0f, upY, 0.0f);
+    gluLookAt(cx, cy, cz, cameraTargetX, cameraTargetY, cameraTargetZ, 0.0f, upY, 0.0f);
 
     // Dibujar GridHelper (solo en modos correspondientes)
     if (state.demoMode != DEMO_FILTRADO && state.demoMode != DEMO_MIPMAPPING && state.demoMode != DEMO_WRAP) {
@@ -1493,11 +1484,11 @@ void display() {
         glEnable(GL_LIGHTING);
     } 
     else if (state.demoMode == DEMO_MIPMAPPING) {
-        // Dos planos largos inclinados en perspectiva para ver aliasing
+        // Dos planos largos adyacentes que se juntan exactamente a la mitad (x = 0.0)
         
         // Plano Izquierdo: SIN MIPMAP (GL_LINEAR)
         glPushMatrix();
-        glTranslatef(-1.8f, -0.5f, 0.0f);
+        glTranslatef(0.0f, -0.5f, 0.0f);
         if (state.wireframe) {
             glDisable(GL_TEXTURE_2D);
             glDisable(GL_LIGHTING);
@@ -1512,12 +1503,12 @@ void display() {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glColor3f(1.0f, 1.0f, 1.0f);
         }
-        drawTexturedPlane(12.0f, 12.0f, 12.0f);
+        drawCustomPlane(-6.0f, 0.0f, -40.0f, 6.0f, 6.0f, 46.0f);
         glPopMatrix();
 
         // Plano Derecho: CON MIPMAP (GL_LINEAR_MIPMAP_LINEAR)
         glPushMatrix();
-        glTranslatef(1.8f, -0.5f, 0.0f);
+        glTranslatef(0.0f, -0.5f, 0.0f);
         if (state.wireframe) {
             glDisable(GL_TEXTURE_2D);
             glDisable(GL_LIGHTING);
@@ -1532,7 +1523,7 @@ void display() {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glColor3f(1.0f, 1.0f, 1.0f);
         }
-        drawTexturedPlane(12.0f, 12.0f, 12.0f);
+        drawCustomPlane(0.0f, 6.0f, -40.0f, 6.0f, 6.0f, 46.0f);
         glPopMatrix();
 
         if (state.textureActive && state.texture != TEX_NONE) {
@@ -1721,27 +1712,29 @@ void keyboard(unsigned char key, int x, int y) {
         case 'H':
             state.hudVisible = !state.hudVisible;
             break;
-        case 'z':
-        case 'Z':
-            state.wireframe = !state.wireframe;
-            break;
-
-        case 'v':
-        case 'V':
-            state.objFlipV = !state.objFlipV;
-            break;
+        case 'a':
+        case 'A':
         case 'g':
         case 'G':
-            if (state.demoMode == DEMO_INTERPOLACION_UV) {
-                state.geometry = (state.geometry == GEOM_ESFERA) ? GEOM_CILINDRO : GEOM_ESFERA;
-            } else if (state.demoMode == DEMO_PROYECCIONES) {
+            if (state.demoMode == DEMO_MIPMAPPING) {
+                // Deshabilitado en Mipmapping
+                break;
+            }
+            if (state.demoMode == DEMO_PROYECCIONES) {
                 if (state.geometry == GEOM_PLANO) state.geometry = GEOM_ESFERA;
                 else if (state.geometry == GEOM_ESFERA) state.geometry = GEOM_CILINDRO;
                 else if (state.geometry == GEOM_CILINDRO) state.geometry = GEOM_CONO;
                 else state.geometry = GEOM_PLANO;
+            } else if (state.demoMode == DEMO_OBJ_UV) {
+                state.activeObjIndex = (state.activeObjIndex + 1) % 4;
             } else {
-                state.geometry = static_cast<GeometryType>((state.geometry + 1) % 7);
+                // Modo Libre (0), Interpolacion UV (1) y otros: ciclar solo por las 5 figuras analiticas (0 a 4)
+                state.geometry = static_cast<GeometryType>((state.geometry + 1) % 5);
             }
+            break;
+        case 'z':
+        case 'Z':
+            state.wireframe = !state.wireframe;
             break;
         case 't':
         case 'T':
@@ -1750,8 +1743,7 @@ void keyboard(unsigned char key, int x, int y) {
                 state.texture = TEX_GRID;
             } else {
                 state.texture = static_cast<TextureType>((state.texture + 1) % 7);
-                if (state.texture == TEX_CUSTOM && textureIds[5] == 0) {
-                    selectAndLoadCustomTexture();
+                if (state.texture == TEX_CUSTOM) {
                     if (textureIds[5] == 0) {
                         state.texture = TEX_NONE;
                         state.textureActive = false;
@@ -1785,8 +1777,8 @@ void keyboard(unsigned char key, int x, int y) {
         case 'M':
             state.generateMipmaps = !state.generateMipmaps;
             break;
-        case 'a':
-        case 'A':
+        case 'e':
+        case 'E':
             state.anisotropy = std::min(state.anisotropy * 2.0f, maxAnisotropy);
             if (state.anisotropy < 1.0f) state.anisotropy = 1.0f;
             break;
@@ -1819,9 +1811,11 @@ void keyboard(unsigned char key, int x, int y) {
         
         // Atajos para Modos Didacticos
         case '0':
+            cameraTargetX = cameraTargetY = cameraTargetZ = 0.0f;
             state.demoMode = DEMO_LIBRE;
             break;
         case '1':
+            cameraTargetX = cameraTargetY = cameraTargetZ = 0.0f;
             state.demoMode = DEMO_INTERPOLACION_UV;
             state.geometry = GEOM_ESFERA;
             state.texture = TEX_GRID;
@@ -1832,18 +1826,20 @@ void keyboard(unsigned char key, int x, int y) {
             cameraDistance = 3.5f;
             break;
         case '2':
+            cameraTargetX = cameraTargetY = cameraTargetZ = 0.0f;
             state.demoMode = DEMO_FILTRADO;
             state.geometry = GEOM_PLANO;
             state.texture = TEX_CHECKER;
             state.textureActive = true;
-            state.repeatX = 1.0f;
-            state.repeatY = 1.0f;
+            state.repeatX = 8.0f;
+            state.repeatY = 8.0f;
             state.wireframe = false;
             cameraDistance = 3.2f;
             cameraAngleX = 0.0f;
             cameraAngleY = 0.4f;
             break;
         case '3':
+            cameraTargetX = cameraTargetY = cameraTargetZ = 0.0f;
             state.demoMode = DEMO_MIPMAPPING;
             state.geometry = GEOM_PLANO;
             state.texture = TEX_GRID;
@@ -1856,6 +1852,7 @@ void keyboard(unsigned char key, int x, int y) {
             cameraAngleY = 0.2f;
             break;
         case '4':
+            cameraTargetX = cameraTargetY = cameraTargetZ = 0.0f;
             state.demoMode = DEMO_WRAP;
             state.geometry = GEOM_PLANO;
             state.texture = TEX_GRID;
@@ -1868,6 +1865,7 @@ void keyboard(unsigned char key, int x, int y) {
             cameraAngleY = 0.5f;
             break;
         case '5':
+            cameraTargetX = cameraTargetY = cameraTargetZ = 0.0f;
             state.demoMode = DEMO_PROYECCIONES;
             state.geometry = GEOM_PLANO;
             state.texture = TEX_GRID;
@@ -1878,6 +1876,7 @@ void keyboard(unsigned char key, int x, int y) {
             cameraDistance = 4.0f;
             break;
         case '6':
+            cameraTargetX = cameraTargetY = cameraTargetZ = 0.0f;
             state.demoMode = DEMO_OBJ_UV;
             state.geometry = GEOM_OBJ;
             state.texture = TEX_GRID;
@@ -1900,9 +1899,11 @@ void mouse(int button, int state_mouse, int x, int y) {
         activeMouseButton = button;
         lastMouseX = x;
         lastMouseY = y;
+        isPanning = (glutGetModifiers() & GLUT_ACTIVE_SHIFT) != 0;
     } else if (state_mouse == GLUT_UP) {
         if (activeMouseButton == button) {
             activeMouseButton = -1;
+            isPanning = false;
         }
     }
 }
@@ -1910,14 +1911,33 @@ void mouse(int button, int state_mouse, int x, int y) {
 // Movimiento del Raton (Arrastrar)
 void motion(int x, int y) {
     if (activeMouseButton == GLUT_LEFT_BUTTON) {
-        float dx = (x - lastMouseX) * 0.012f;
-        float dy = (y - lastMouseY) * 0.012f;
-        cameraAngleX -= dx; // Direccion natural de arrastre
-        cameraAngleY -= dy; // Direccion natural de arrastre
+        if (isPanning) {
+            float dx = (x - lastMouseX) * 0.002f * cameraDistance;
+            float dy = (y - lastMouseY) * 0.002f * cameraDistance;
+            float rightX = cos(cameraAngleX);
+            float rightZ = -sin(cameraAngleX);
+            cameraTargetX -= dx * rightX;
+            cameraTargetZ -= dx * rightZ;
+            cameraTargetY += dy;
+        } else {
+            float dx = (x - lastMouseX) * 0.012f;
+            float dy = (y - lastMouseY) * 0.012f;
+            cameraAngleX -= dx; // Direccion natural de arrastre
+            cameraAngleY -= dy; // Direccion natural de arrastre
 
-        if (cameraAngleY > 1.4f) cameraAngleY = 1.4f;
-        if (cameraAngleY < -1.4f) cameraAngleY = -1.4f;
-
+            if (cameraAngleY > 1.4f) cameraAngleY = 1.4f;
+            if (cameraAngleY < -1.4f) cameraAngleY = -1.4f;
+        }
+        lastMouseX = x;
+        lastMouseY = y;
+    } else if (activeMouseButton == GLUT_MIDDLE_BUTTON) {
+        float dx = (x - lastMouseX) * 0.002f * cameraDistance;
+        float dy = (y - lastMouseY) * 0.002f * cameraDistance;
+        float rightX = cos(cameraAngleX);
+        float rightZ = -sin(cameraAngleX);
+        cameraTargetX -= dx * rightX;
+        cameraTargetZ -= dx * rightZ;
+        cameraTargetY += dy;
         lastMouseX = x;
         lastMouseY = y;
     } else if (activeMouseButton == GLUT_RIGHT_BUTTON) {
